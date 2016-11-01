@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Children, Component, PropTypes } from 'react';
 import Draggable from '@bokuweb/react-draggable-custom';
 import Resizable from 'react-resizable-box';
 
@@ -69,6 +69,7 @@ export default class ReactRnd extends Component {
     ]),
     zIndex: PropTypes.number,
     lockAspectRatio: PropTypes.bool,
+    cancel: PropTypes.string
   };
 
   static defaultProps = {
@@ -192,6 +193,28 @@ export default class ReactRnd extends Component {
             zIndex, bounds, moveAxis, dragHandlerClassName, lockAspectRatio,
             moveGrid, resizeGrid, onDoubleClick } = this.props;
     const { x, y } = this.state;
+
+    const newProps = { x: x, y: y };
+
+    // propsを渡す
+    const childrenWithProps = Children.map(
+        this.props.children,
+        (child) => {
+
+          switch (typeof child) {
+            case 'string':
+              return child
+
+            case 'object':
+              return React.cloneElement(child, newProps)
+
+            default:
+              return null
+          }
+        }
+    )
+
+
     return (
       <Draggable
         axis={moveAxis}
@@ -207,6 +230,7 @@ export default class ReactRnd extends Component {
         passCoordinate
         x={x}
         y={y}
+        cancel={this.props.cancel}
       >
         <div style={Object.assign(boxStyle, { zIndex })}>
           <Resizable
@@ -230,7 +254,7 @@ export default class ReactRnd extends Component {
             grid={resizeGrid}
             lockAspectRatio={lockAspectRatio}
           >
-            {this.props.children}
+            {childrenWithProps}
           </Resizable>
         </div>
       </Draggable>
